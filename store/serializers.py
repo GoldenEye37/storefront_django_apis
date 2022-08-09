@@ -8,7 +8,7 @@ from unittest.util import _MAX_LENGTH
 from django.forms import UUIDField
 from rest_framework import serializers
 
-from store.models import Collection, Product, Reviews, Cart, CartItem
+from store.models import Collection, Customer, Product, Reviews, Cart, CartItem
 
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,3 +99,10 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'items', 'total_price']
 
+class CustomerSerializer(serializers.ModelSerializer):
+
+    user_id = serializers.IntegerField()
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'user_id','phone','birth_date', 'membership']
