@@ -13,6 +13,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from store.pagination import DefaultPagination
+from store.permissions import IsAdminOrReadOnly
 from .models import Cart, CartItem, Collection, Product, OrderItem, Reviews, Customer
 from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewsSerializer 
 
@@ -21,6 +22,7 @@ class ProductViewset(ModelViewSet):
 
     queryset =  Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = DefaultPagination
@@ -47,7 +49,7 @@ class CollectionViewset(ModelViewSet):
 
     queryset = Collection.objects.annotate(products_count = Count('products')).all()
     serializer_class= CollectionSerializer
-
+    permission_classes = [IsAdminOrReadOnly]
     def delete(self, request, pk):
         Collection.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
@@ -85,12 +87,12 @@ class CartItemViewset(ModelViewSet):
             .select_related('product')
 
 
-class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class CustomerViewSet(ModelViewSet):
 
 
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated] # this put permissions to this view
+    permission_classes = [IsAdminUser] # this put permissions to this view
 
 
     # to put permissions on specific mixins or GET/POST/PUT/DELETE/RETRIEVE
@@ -99,7 +101,7 @@ class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Ge
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    @action(detail=False, methods=['GET', 'PUT'])
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
         (customer, created) = Customer.objects.get_or_create(user_id = request.id)
 
