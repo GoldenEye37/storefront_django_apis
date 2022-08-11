@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from store.pagination import DefaultPagination
-from store.permissions import IsAdminOrReadOnly
+from store.permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .models import Cart, CartItem, Collection, Product, OrderItem, Reviews, Customer
 from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewsSerializer 
 
@@ -96,10 +96,14 @@ class CustomerViewSet(ModelViewSet):
 
 
     # to put permissions on specific mixins or GET/POST/PUT/DELETE/RETRIEVE
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        return [IsAuthenticated()]
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         return [AllowAny()]
+    #     return [IsAuthenticated()]
+
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        return Response('ok')
 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
