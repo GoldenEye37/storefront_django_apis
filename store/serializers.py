@@ -5,6 +5,7 @@ from itertools import count, product
 from multiprocessing import context
 from pyexpat import model
 from unittest.util import _MAX_LENGTH
+from xml.dom import ValidationErr
 from django.forms import UUIDField
 from requests import delete
 from django.db import transaction
@@ -131,6 +132,13 @@ class OrderSerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.Serializer):
 
     cart_id = serializers.UUIDField()
+
+    def validate_cart_id(self, cart_id):
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError('No cart with the given ID was found!')
+        if CartItem.objects.filter(cart_id=cart_id).count()==0:
+            raise serializers.ValidationError('the cart is empty!')
+        return cart_id
 
     def save(self, **kwargs):
 
