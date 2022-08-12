@@ -1,3 +1,4 @@
+from ast import Return
 from itertools import count, product
 from math import fabs
 from django.db.models import Count
@@ -14,8 +15,8 @@ from rest_framework.response import Response
 
 from store.pagination import DefaultPagination
 from store.permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
-from .models import Cart, CartItem, Collection, Product, OrderItem, Reviews, Customer
-from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewsSerializer 
+from .models import Cart, CartItem, Collection, Order, Product, OrderItem, Reviews, Customer
+from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewsSerializer 
 
 
 class ProductViewset(ModelViewSet):
@@ -117,3 +118,27 @@ class CustomerViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+
+class OrderViewSet(ModelViewSet):
+
+    
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method=='POST':
+            return CreateOrderSerializer
+        return OrderSerializer
+
+    def get_serializer_context(self):
+
+        return {'user_id': self.request.user.id}
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Order.objects.all()
+        (customer_id, created) = Customer.objects.only('id').get_or_create(user_id = user.id)
+        return Order.objects.filter(customer_id = customer_id)
+        
+
