@@ -16,15 +16,17 @@ from rest_framework.response import Response
 
 from store.pagination import DefaultPagination
 from store.permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
-from .models import Cart, CartItem, Collection, Order, Product, OrderItem, Reviews, Customer
-from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewsSerializer, UpdateOrderSerializer 
+from .models import Cart, CartItem, Collection, Order, Product, OrderItem, Reviews, Customer, ProductImage
+from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, \
+    CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewsSerializer, \
+    UpdateOrderSerializer, ProductImageSerializer
 
 
 class ProductViewset(ModelViewSet):
 
     queryset =  Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    # permission_classes = [IsAdminOrReadOnly]
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = DefaultPagination
@@ -42,6 +44,15 @@ class ProductViewset(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
         
+class ProductImageViewset(ModelViewSet):
+    serializer_class = ProductImageSerializer
+    # permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs['product_pk']}
+
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
 
 
 class CollectionViewset(ModelViewSet):

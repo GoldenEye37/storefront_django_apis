@@ -1,17 +1,9 @@
-from calendar import c
-from dataclasses import fields
 from decimal import Decimal
-from itertools import count, product
-from multiprocessing import context
-from pyexpat import model
-from unittest.util import _MAX_LENGTH
-from xml.dom import ValidationErr
-from django.forms import UUIDField
-from requests import delete
 from django.db import transaction
 from rest_framework import serializers
 
-from store.models import Collection, Customer, Order, OrderItem, Product, Reviews, Cart, CartItem
+from store.models import Collection, Customer, Order, OrderItem, Product, Reviews, Cart, CartItem, ProductImage
+
 
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,6 +21,15 @@ class ProductSerializer(serializers.ModelSerializer):
     
     def with_tax(self, product:Product):
         return product.unit_price * Decimal(1.1)
+
+class ProductImageSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImage.objects.create(product_id=product_id, **validated_data)
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image']
 
 
 
