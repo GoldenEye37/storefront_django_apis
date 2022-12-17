@@ -11,16 +11,6 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'product_count']
 
     product_count = serializers.IntegerField(read_only=True)
-    
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id','title','slug', 'inventory', 'unit_price', 'collection', 'price_with_tax' ]
-
-    price_with_tax = serializers.SerializerMethodField(method_name='with_tax')
-    
-    def with_tax(self, product:Product):
-        return product.unit_price * Decimal(1.1)
 
 class ProductImageSerializer(serializers.ModelSerializer):
 
@@ -31,6 +21,16 @@ class ProductImageSerializer(serializers.ModelSerializer):
         model = ProductImage
         fields = ['id', 'image']
 
+class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    class Meta:
+        model = Product
+        fields = ['id','title','slug', 'inventory', 'unit_price', 'collection', 'price_with_tax', 'images']
+
+    price_with_tax = serializers.SerializerMethodField(method_name='with_tax')
+    
+    def with_tax(self, product:Product):
+        return product.unit_price * Decimal(1.1)
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
