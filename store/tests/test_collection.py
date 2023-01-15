@@ -1,7 +1,9 @@
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
 
+@pytest.mark.django_db
 class TestCreateCollection:
 
     def test_if_user_is_anonymous_401(self):
@@ -14,3 +16,4 @@ class TestCreateCollection:
 
         # Assert
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+

@@ -58,7 +58,7 @@ class ProductImageViewset(ModelViewSet):
 class CollectionViewset(ModelViewSet):
 
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
-    serializer_class= CollectionSerializer
+    serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
 
     def delete(self, request, pk):
