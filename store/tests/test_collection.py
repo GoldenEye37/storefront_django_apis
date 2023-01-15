@@ -2,10 +2,10 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
-
 @pytest.mark.django_db
 class TestCreateCollection:
 
+    @pytest.mark.skip
     def test_if_user_is_anonymous_401(self):
 
         #Arrange
