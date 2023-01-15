@@ -173,3 +173,8 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 2525
 DEFAULT_FROM_EMAIL = 'from@deefarmsbuy.com'
+
+
+ADMINS = [
+    ("leon", "ldhimba@gmail.com")
+]
