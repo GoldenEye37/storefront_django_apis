@@ -23,7 +23,6 @@ from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializ
 
 
 class ProductViewset(ModelViewSet):
-
     queryset = Product.objects.prefetch_related('images').all()
     serializer_class = ProductSerializer
     # permission_classes = [IsAdminOrReadOnly]
@@ -38,14 +37,15 @@ class ProductViewset(ModelViewSet):
         return {'request': self.request}
 
     def destroy(self, request, *args, **kwargs):
-        if OrderItem.objects.filter(product_id=kwargs['pk']).count()>0:
+        if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
             return Response('error')
 
         return super().destroy(request, *args, **kwargs)
 
-        
+
 class ProductImageViewset(ModelViewSet):
     serializer_class = ProductImageSerializer
+
     # permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_context(self):
@@ -56,35 +56,34 @@ class ProductImageViewset(ModelViewSet):
 
 
 class CollectionViewset(ModelViewSet):
-
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
 
     def delete(self, request, pk):
         Collection.delete()
-        return Response(status = status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ReviewsViewset(ModelViewSet):
     serializer_class = ReviewsSerializer
 
     def get_queryset(self):
-        return Reviews.objects.filter(product_id = self.kwargs['product_pk'])
-        
+        return Reviews.objects.filter(product_id=self.kwargs['product_pk'])
 
     def get_serializer_context(self):
-        return {'product_id':self.kwargs['product_pk']}
+        return {'product_id': self.kwargs['product_pk']}
 
-class CartViewset(ModelViewSet, CreateModelMixin,RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
 
+class CartViewset(ModelViewSet, CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
 
+
 class CartItemViewset(ModelViewSet):
-    
+
     def get_serializer_class(self):
-        if self.request.method =='GET':
+        if self.request.method == 'GET':
             return CartItemSerializer
         elif self.request.method == 'POST':
             return AddCartItemSerializer
@@ -93,18 +92,15 @@ class CartItemViewset(ModelViewSet):
         return {'cart_id': self.kwargs['cart_pk']}
 
     def get_queryset(self):
-        return CartItem.objects.\
-            filter(cart_id = self.kwargs['cart_pk'])\
+        return CartItem.objects. \
+            filter(cart_id=self.kwargs['cart_pk']) \
             .select_related('product')
 
 
 class CustomerViewSet(ModelViewSet):
-
-
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAdminUser] # this put permissions to this view
-
+    permission_classes = [IsAdminUser]  # this put permissions to this view
 
     # to put permissions on specific mixins or GET/POST/PUT/DELETE/RETRIEVE
     # def get_permissions(self):
@@ -118,21 +114,20 @@ class CustomerViewSet(ModelViewSet):
 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request):
-        customer = Customer.objects.get(user_id = request.id)
+        customer = Customer.objects.get(user_id=request.id)
 
-        if request.method=='GET':
+        if request.method == 'GET':
             serializer = CustomerSerializer(customer)
             return Response(serializer.data)
         elif request.method == 'PUT':
-            serializer = CustomerSerializer(customer, data = request.data)
+            serializer = CustomerSerializer(customer, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
 
 
 class OrderViewSet(ModelViewSet):
-
-    http_method_names = [ 'get', 'post', 'patch', 'delete', 'heads', 'options']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'heads', 'options']
 
     def get_permissions(self):
         if self.request.method in ['PATCH', 'DELETE']:
@@ -145,13 +140,13 @@ class OrderViewSet(ModelViewSet):
             context={'user_id': self.request.user.id})
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        serializer = OrderSerializer(order)
-        return Response(serializer.data) 
+        serializer = CreateOrderSerializer(order)
+        return Response(serializer.data)
 
     def get_serializer_class(self):
-        if self.request.method=='POST':
+        if self.request.method == 'POST':
             return CreateOrderSerializer
-        elif self.request.method=='PATCH':
+        elif self.request.method == 'PATCH':
             return UpdateOrderSerializer
         return OrderSerializer
 
@@ -159,7 +154,5 @@ class OrderViewSet(ModelViewSet):
         user = self.request.user
         if user.is_staff:
             return Order.objects.all()
-        customer_id = Customer.objects.only('id').get(user_id = user.id)
-        return Order.objects.filter(customer_id = customer_id)
-        
-
+        customer_id = Customer.objects.only('id').get(user_id=user.id)
+        return Order.objects.filter(customer_id=customer_id)
